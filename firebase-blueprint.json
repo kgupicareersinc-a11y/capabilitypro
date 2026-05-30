@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Stores high-stakes verification profile data of South African entities.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The unique Firebase Auth User ID" },
+        "companyName": { "type": "string", "description": "CIPC Registered Company Name" },
+        "registrationNumber": { "type": "string", "description": "Enterprise Registration Number (e.g. 2020/123456/07)" },
+        "bbbeeLevel": { "type": "string", "description": "Verified B-BBEE contributor level" },
+        "csdNumber": { "type": "string", "description": "Central Supplier Database Registration Number MAAA..." },
+        "cidbGrade": { "type": "string", "description": "Construction Industry Development Board grading" },
+        "contactEmail": { "type": "string", "description": "Primary communication email address" },
+        "contactPhone": { "type": "string", "description": "Primary communication mobile number" },
+        "physicalAddress": { "type": "string", "description": "Registered business street address" },
+        "industry": { "type": "string", "description": "Primary sector of operations" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Timestamp of last profile update" }
+      },
+      "required": ["userId", "companyName", "registrationNumber"]
+    },
+    "CapabilityStatement": {
+      "title": "CapabilityStatement",
+      "description": "Customizable eTender and Corporate compliant document statements.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique statement identifier" },
+        "ownerId": { "type": "string", "description": "Firebase Auth ID of the owner" },
+        "title": { "type": "string", "description": "Custom title of the statement" },
+        "templateId": { "type": "string", "description": "The active visual layout structure" },
+        "companyName": { "type": "string" },
+        "registrationNumber": { "type": "string" },
+        "bbbeeLevel": { "type": "string" },
+        "overview": { "type": "string" },
+        "csdNumber": { "type": "string" },
+        "cidbGrade": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "contactPhone": { "type": "string" },
+        "physicalAddress": { "type": "string" },
+        "services": { "type": "array", "description": "Core competencies of the business" },
+        "differentiators": { "type": "array", "description": "Value adds and competitive edges" },
+        "certifications": { "type": "array" },
+        "pastPerformance": { "type": "array", "description": "List of completed high-value projects" },
+        "lastEdited": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "ownerId", "title", "companyName"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile data, isolated or accessible by owner"
+    },
+    "statements/{statementId}": {
+      "schema": "CapabilityStatement",
+      "description": "Capability statements, fully authorized and queryable by owner and accessible publicly for shared views"
+    }
+  }
+}

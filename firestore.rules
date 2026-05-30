@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net default catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Standard security helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Users Collection rules (PII Protection)
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create, update: if isOwner(userId) &&
+        request.resource.data.companyName is string &&
+        request.resource.data.companyName.size() <= 200 &&
+        request.resource.data.registrationNumber is string &&
+        request.resource.data.registrationNumber.size() <= 100;
+      allow delete: if false;
+    }
+
+    // Capability Statements collection rules
+    match /statements/{statementId} {
+      // Allow public get so the shared dossier link can be read directly
+      allow get: if true;
+      
+      // Force strict list query filtering checking statement ownerId
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() <= 250;
+
+      allow update: if isSignedIn() &&
+        resource.data.ownerId == request.auth.uid &&
+        request.resource.data.ownerId == request.auth.uid &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() <= 250;
+
+      allow delete: if isSignedIn() &&
+        resource.data.ownerId == request.auth.uid;
+    }
+  }
+}

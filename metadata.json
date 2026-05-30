@@ -1,0 +1,6 @@
+{
+  "name": "CapabilityPro SA",
+  "description": "Professional Capability Statement Generator for South African SMEs and government tenders.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
