@@ -106,6 +106,15 @@ export default function Footer({ onNavigate }: FooterProps) {
             </li>
             <li>
               <button 
+                onClick={() => onNavigate('admin')}
+                className="hover:text-amber-400 hover:underline text-left block text-amber-500 font-semibold font-sans"
+                id="footer-admin-link"
+              >
+                🔒 Admin Dashboard
+              </button>
+            </li>
+            <li>
+              <button 
                 onClick={() => alert("POPIA Disclaimer:\n\nCapabilityPro SA is fully committed to protecting your company's information in compliance with the South African Protection of Personal Information Act (POPIA), Act 4 of 2013.\n\nAll registration numbers, B-BBEE rating details, and corporate past performances are stored safely.")}
                 className="hover:text-white hover:underline text-left block"
               >

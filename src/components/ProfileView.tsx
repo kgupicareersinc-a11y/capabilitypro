@@ -28,7 +28,7 @@ export default function ProfileView({ profile, onSaveProfile }: ProfileViewProps
   const fetchTenderStrategyTips = async () => {
     setLoadingTips(true);
     try {
-      const response = await fetch('/api/review-tender', {
+      const response = await fetch('/api/gemini/review-tender', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

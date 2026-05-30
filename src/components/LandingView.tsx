@@ -271,17 +271,22 @@ export default function LandingView({ onStartFree, onViewSample, onSelectPlan }:
               Simple, Transparent Pricing
             </h2>
             <p className="text-slate-300 font-sans text-sm md:text-base">
-              Start building compliant portfolios for free and upgrade as your submission queue grows.
+              Start building compliant portfolios with SME Lite or choose an advanced subscription package as your bid volume grows.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pt-4">
             
             {/* SME Lite */}
-            <div className="bg-white/5 border border-white/10 p-8 rounded-2xl flex flex-col justify-between text-left">
+            <div className="bg-white/5 border border-amber-500/20 p-8 rounded-2xl flex flex-col justify-between text-left">
               <div>
-                <h3 className="font-sans font-bold text-xl text-white">SME Lite</h3>
-                <p className="font-sans font-extrabold text-4xl text-white my-6">Free</p>
+                <div className="flex justify-between items-center">
+                  <h3 className="font-sans font-bold text-xl text-white">SME Lite</h3>
+                  <span className="bg-amber-500/15 text-amber-400 font-sans font-extrabold text-[9px] px-2 py-0.5 rounded uppercase tracking-wider">ONCE-OFF</span>
+                </div>
+                <p className="font-sans font-extrabold text-4xl text-[#ffdea5] my-6">
+                  R250<span className="text-xs font-semibold text-slate-300"> once off</span>
+                </p>
                 <div className="h-[1px] bg-white/10 my-4"></div>
                 <ul className="space-y-4 font-sans text-sm text-slate-300">
                   <li className="flex items-center gap-2.5">

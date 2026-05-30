@@ -9,8 +9,10 @@ import ProfileView from './components/ProfileView';
 import GeneratorView from './components/GeneratorView';
 import AboutView from './components/AboutView';
 import WorkspaceView from './components/WorkspaceView';
+import AdminView from './components/AdminView';
+import PaymentModal from './components/PaymentModal';
 
-import { CapabilityStatement, UserProfile } from './types';
+import { CapabilityStatement, UserProfile, ProjectPerformance } from './types';
 import { INITIAL_PROFILE, INITIAL_STATEMENTS } from './initialData';
 import { Bell, CheckCircle, Info, X, Share2, Award, Landmark } from 'lucide-react';
 import { 
@@ -28,6 +30,9 @@ export default function App() {
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [statements, setStatements] = useState<CapabilityStatement[]>(INITIAL_STATEMENTS);
   const [editingStatement, setEditingStatement] = useState<CapabilityStatement | null>(null);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>('');
+  const [selectedPlanToPay, setSelectedPlanToPay] = useState<string>('SME Lite');
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState<boolean>(false);
 
   // Notifications systems
   const [notifications, setNotifications] = useState<{ id: string; text: string; type: 'success' | 'info' }[]>([
@@ -40,7 +45,8 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = initAuth(
       async (user, token) => {
-        addNotification(`Protected session established for ${user.email}. Restoring files from Firestore...`, 'success');
+        setCurrentUserEmail(user.email || 'kgupicareersinc@gmail.com');
+        addNotification(`Protected session established for ${user.email || 'operator'}. Restoring files from Firestore...`, 'success');
         try {
           // Fetch profile
           const dbProfile = await dbGetUserProfile(user.uid);
@@ -66,6 +72,7 @@ export default function App() {
         }
       },
       () => {
+        setCurrentUserEmail('');
         // Fallback local storage operations
         const savedStatements = localStorage.getItem('cap_sa_statements');
         if (savedStatements) {
@@ -117,6 +124,17 @@ export default function App() {
     addNotification(`Company verification profile saved for ${updatedProfile.companyName}!`, 'success');
   };
 
+  const handlePaymentSuccess = async (plan: string) => {
+    const updatedProfile: UserProfile = {
+      ...profile,
+      companyName: profile.companyName || 'SME Enterprise Ltd',
+    };
+    await handleSaveProfile(updatedProfile);
+    setIsPaymentModalOpen(false);
+    addNotification(`👑 ${plan} package status verified and unlocked via PayShap direct channel!`, 'success');
+    setCurrentView('dashboard');
+  };
+
   const addNotification = (text: string, type: 'success' | 'info' = 'info') => {
     const newNotif = { id: `notif-${Date.now()}`, text, type };
     setNotifications([newNotif, ...notifications].slice(0, 5));
@@ -157,36 +175,180 @@ export default function App() {
   };
 
   const handleSelectTemplateFromGallery = (templateId: string) => {
-    // Instantiates template with custom configuration preloaded
+    // Sector-specific preloaded content to make templates work properly
+    let overview = '';
+    let services: string[] = [];
+    let differentiators: string[] = [];
+    let certifications: string[] = [];
+    let pastPerformance: ProjectPerformance[] = [];
+
+    if (templateId === 'corporate') {
+      overview = `Our company provides premier corporate supply chain coordination, heavy logistics fleet management, and multi-depot administrative oversight. Fully verified on the Central Supplier Database (CSD) and CIPC registered, we partner with blue-chip South African companies and public corporations to optimize high-volume distribution paths under rigorous safety controls.`;
+      services = [
+        "Turnkey Fleet Procurement & Distribution Logistics",
+        "Multi-Modal Regional Supply Chain Management",
+        "Real-time Satellite Cargo Tracking & Route Optimization",
+        "Enterprise Risk Management & Warehousing Auditing"
+      ];
+      differentiators = [
+        `Verified Level ${profile.bbbeeLevel || '1'} B-BBEE status with 135% procurement recognition`,
+        "Fully audited National Treasury compliant logistics chain",
+        "Advanced tracking telemetry with 24/7 recovery operations"
+      ];
+      certifications = [
+        "SABS ISO 9001:2015 Quality Management Approved",
+        "Road Freight Association (RFA) Registered Member"
+      ];
+      pastPerformance = [
+        {
+          id: `perf-${Date.now()}-1`,
+          projectName: "Spoornet Terminal Bulk Logistics Support",
+          client: "Transnet National Ports Authority (TNPA)",
+          value: 8400000,
+          year: 2024,
+          status: "completed",
+          description: "Synchronized bulk delivery of raw components with zero safety incidents over twelve months."
+        }
+      ];
+    } else if (templateId === 'tender') {
+      overview = `A specialized government tender technical unit fully aligned with PPPFA regulations and eTender framework specifications. Backed by solid administrative records on the Central Supplier Database (CSD), we deliver public sector projects, municipal infrastructure enhancements, and community upliftment initiatives strictly on schedule.`;
+      services = [
+        "Municipal Infrastructure Civil Works",
+        "Community-Led Human Settlements Construction",
+        "Public Sector Sanitary Sourcing & Delivery",
+        "Local Youth and Subcontractor Skills Training Schemes"
+      ];
+      differentiators = [
+        `Level ${profile.bbbeeLevel || '1'} B-BBEE contributor registered on Central Supplier Database`,
+        "80% localized labor guarantee in target municipal wards",
+        "Fully itemized pricing index satisfying Treasury maximum cost metrics"
+      ];
+      certifications = [
+        "CSD Active Registration (MAAA compliance verified)",
+        "National Home Builders Registration Council (NHBRC) compliance"
+      ];
+      pastPerformance = [
+        {
+          id: `perf-${Date.now()}-1`,
+          projectName: "Community Classroom Upliftment Bid",
+          client: "Gauteng Department of Infrastructure Development (GDID)",
+          value: 11300000,
+          year: 2023,
+          status: "completed",
+          description: "Built 6 new modular classroom facilities including concrete paving with 90% local youth employment."
+        }
+      ];
+    } else if (templateId === 'infrabuild') {
+      overview = `A robust engineering contractor ready for high-density public infrastructure and heavy physical delivery. Holding specialized CIDB ratings, we manage complex civil project footprints, storm-water upgrades, bulk reticulation pipelines, and heavy earthmoving machines across South Africa's transport corridors.`;
+      services = [
+        "Bulk Water Reticulation & Trench Sump Sourcing",
+        "Road Rehabilitation & Asphalt Pavement Sealing",
+        "Concrete Structural Overpasses & Retaining Foundations",
+        "Civil Engineering Plant Sourcing & Leasing"
+      ];
+      differentiators = [
+        `Active CIDB grade ${profile.cidbGrade || "6CE"} rating for general civil engineering projects`,
+        "Dedicated SABS concrete strength quality certification guards",
+        "Comprehensive COIDA work-cover licensing with zero incident record"
+      ];
+      certifications = [
+        `CIDB Grade ${profile.cidbGrade || "6CE"} active rating certificate`,
+        "SABS Concrete Standard Approval Certificate",
+        "Federation of South African Civil Engineering Contractors Member"
+      ];
+      pastPerformance = [
+        {
+          id: `perf-${Date.now()}-1`,
+          projectName: "Stormwater Drainage Pipeline Rehabilitation",
+          client: "City of Johannesburg Council",
+          value: 15200000,
+          year: 2024,
+          status: "completed",
+          description: "Excavated, graded, and reinforced 2.4km stormwater channels to prevent flooding in high-density informal zones."
+        }
+      ];
+    } else if (templateId === 'digital') {
+      overview = `A dynamic software advisory and digital translation company built for modern South African channels. We design cloud applications, e-Government utility portals, and local-language support bots that optimize citizen service delivery in full compliance with the Protection of Personal Information Act (POPIA).`;
+      services = [
+        "Cloud-Native Software Architecture & USSD Payment Portals",
+        "Municipal Citizen Query Resolution Systems",
+        "Secure Database Management & Migration to AWS/Azure Clusters",
+        "POPIA & Cybersecurity Compliance Penetration Scans"
+      ];
+      differentiators = [
+        "Pristine software optimization tailored for low-bandwidth mobile devices",
+        "Full encryption and local hosting meeting POPIA data sovereignty bounds",
+        "Agile development models guaranteeing first release within 45 days"
+      ];
+      certifications = [
+        "SITA (State Information Technology Agency) Software Supplier Registry",
+        "SABS ISO 27001 Information Security Management Standard",
+        "Information Regulator Registered POPIA Compliance Dossier"
+      ];
+      pastPerformance = [
+        {
+          id: `perf-${Date.now()}-1`,
+          projectName: "Municipal Smart Utility Portal Setup",
+          client: "City of Cape Town",
+          value: 6700000,
+          year: 2024,
+          status: "completed",
+          description: "Deployed responsive cloud portal and native SMS billing interface to manage service issues for 120,000 residents."
+        }
+      ];
+    } else { // boutique
+      overview = `A highly refined advisory firm specialized in corporate tax structures, SANAS-compliant B-BBEE scorecard maximization schemes, and Central Supplier Database compliance diagnostics. We empower South African businesses, agencies, and state enterprises to clean administrative errors and formulate winning technical submissions.`;
+      services = [
+        "B-BBEE Ownership & Joint Venture Strategic Structuring",
+        "CSD Compliance Audit & Dispute Remediation Packages",
+        "Government Bid Formulation Mentorship Courses",
+        "Corporate Governance & King IV Code Assessment Models"
+      ];
+      differentiators = [
+        "Led by former municipal finance heads with deep treasury audit experience",
+        "100% successful track record of resolving CSD verification hurdles",
+        "Personalized partner-led advisory with rapid turnarounds"
+      ];
+      certifications = [
+        "SAICA (South African Institute of Chartered Accountants) Registered Practice",
+        "SANAS Accredited BEE Verification Professional Certificate"
+      ];
+      pastPerformance = [
+        {
+          id: `perf-${Date.now()}-1`,
+          projectName: "Enterprise BEE Scorecard Advisory Programme",
+          client: "Rand Water Subcontractors Alliance",
+          value: 1200000,
+          year: 2023,
+          status: "completed",
+          description: "Structured 14 sub-contracting firms' scorecards to elevate them to Level 1 B-BBEE rating inside short bidding schedules."
+        }
+      ];
+    }
+
     const templateStatement: CapabilityStatement = {
       id: '',
-      title: `Tender Formulation [${templateId.toUpperCase()}]`,
+      title: `eTender Bid Formulation [${templateId.toUpperCase()}]`,
       templateId: templateId as any,
       companyName: profile.companyName,
       registrationNumber: profile.registrationNumber,
       bbbeeLevel: profile.bbbeeLevel,
-      overview: 'We provide top-tier physical delivery matching municipal and commercial criteria. Backed by extensive local resource placement, we maintain absolute compliance with SANS standards.',
+      overview,
       csdNumber: profile.csdNumber,
       cidbGrade: profile.cidbGrade,
       contactEmail: profile.contactEmail,
       contactPhone: profile.contactPhone,
       physicalAddress: profile.physicalAddress,
-      services: [
-        "Specialized operations in corporate logistics and development",
-        "Rigorous physical project coordination on call"
-      ],
-      differentiators: [
-        `Proud Level ${profile.bbbeeLevel} B-BBEE contributor verified on CSD`,
-        "Strict regulatory and administrative safety compliance trackers"
-      ],
-      certifications: [],
-      pastPerformance: [],
+      services,
+      differentiators,
+      certifications,
+      pastPerformance,
       lastEdited: new Date().toISOString().split('T')[0]
     };
 
     setEditingStatement(templateStatement);
     setCurrentView('generator');
-    addNotification(`Loaded preset '${templateId}' styled layout. Proceed with tailoring!`, 'success');
+    addNotification(`Loaded premium '${templateId}' sector preset successfully. Ready under eTender registers!`, 'success');
   };
 
   const handleSaveCompiledStatement = async (compiled: CapabilityStatement) => {
@@ -248,6 +410,7 @@ export default function App() {
         onStartFree={handleAddNewProject}
         userEmail={profile.contactEmail}
         onShowNotifications={() => setShowNotificationsDropdown(!showNotificationsDropdown)}
+        showAdminLink={true} 
       />
 
       {/* Notifications system popup dropdown */}
@@ -289,8 +452,9 @@ export default function App() {
               addNotification("Showing ready-to-use eTender compliant statement structures.", "info");
             }}
             onSelectPlan={(plan) => {
-              addNotification(`Trial initiated for '${plan}' successfully! Starting generator...`, 'success');
-              handleAddNewProject();
+              setSelectedPlanToPay(plan);
+              setIsPaymentModalOpen(true);
+              addNotification(`Sourcing secure checkout via ABSA/PayShap bank channels for ${plan}...`, 'info');
             }}
           />
         )}
@@ -342,6 +506,17 @@ export default function App() {
         {currentView === 'about' && (
           <AboutView 
             onStartFree={handleAddNewProject}
+          />
+        )}
+
+        {currentView === 'admin' && (
+          <AdminView 
+            statements={statements}
+            profile={profile}
+            addNotification={addNotification}
+            onUpdateStatements={saveStatementsState}
+            onUpdateProfile={setProfile}
+            onNavigate={(v) => setCurrentView(v)}
           />
         )}
 
@@ -412,8 +587,16 @@ export default function App() {
         onAddNewProject={handleAddNewProject}
       />
 
+      <PaymentModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        selectedPlan={selectedPlanToPay}
+        onPaymentSuccess={handlePaymentSuccess}
+        addNotification={addNotification}
+      />
+
       {/* Shared responsive footer on appropriate pages */}
-      {(currentView === 'landing' || currentView === 'profile' || currentView === 'gallery' || currentView === 'about' || currentView === 'workspace') && (
+      {(currentView === 'landing' || currentView === 'profile' || currentView === 'gallery' || currentView === 'about' || currentView === 'workspace' || currentView === 'admin') && (
         <Footer onNavigate={(v) => setCurrentView(v)} />
       )}
 

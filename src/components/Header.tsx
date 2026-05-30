@@ -6,6 +6,7 @@ interface HeaderProps {
   onStartFree: () => void;
   userEmail?: string;
   onShowNotifications?: () => void;
+  showAdminLink?: boolean;
 }
 
 export default function Header({ 
@@ -13,7 +14,8 @@ export default function Header({
   onNavigate, 
   onStartFree, 
   userEmail,
-  onShowNotifications 
+  onShowNotifications,
+  showAdminLink
 }: HeaderProps) {
   return (
     <header className="fixed top-0 w-full z-50 bg-white border-b border-slate-200 h-16 shadow-sm">
@@ -103,6 +105,20 @@ export default function Header({
           >
             About Us
           </button>
+
+          {showAdminLink && (
+            <button 
+              onClick={() => onNavigate('admin')}
+              className={`font-sans font-bold text-sm h-full px-2 border-b-2 transition-all flex items-center gap-1.5 ${
+                currentView === 'admin'
+                  ? 'text-amber-500 border-amber-500' 
+                  : 'text-amber-500 border-transparent hover:text-amber-600 hover:border-amber-300'
+              }`}
+              id="nav-admin"
+            >
+              🔒 Admin Panel
+            </button>
+          )}
         </nav>
 
         {/* Action Buttons */}
